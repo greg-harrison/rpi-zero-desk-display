@@ -1,48 +1,48 @@
 #!/usr/bin/env python
 
 # Imports
+import os
 import time
 import Adafruit_SSD1306
 import RPi.GPIO as GPIO
-import Image
-import ImageFont
-import ImageDraw
-import os
+from PIL import Image,ImageFont,ImageDraw
+from dotenv import load_dotenv
+
+load_dotenv()
+
+FONT_PATH=os.getenv("FONT_PATH")
 
 # Functions
 # Default Functions
 def clear_display():
-	draw.rectangle((0,0,width,height), outline=0, fill=0)
-
-def set_font(height):
-    ImageFont.truetype('/usr/share/fonts/truetype/roboto/Roboto-Thin.ttf', height)
+    draw.rectangle((0,0,width,height), outline=0, fill=0)
 
 def display_custom(text):
-	# Clear image buffer by drawing a black filled box
+    # Clear image buffer by drawing a black filled box
     clear_display()
 
-	# Set font type and size
-    font = set_font(8)
+    # Set font type and size
+    font = ImageFont.truetype(FONT_PATH, 8)
         
     # Position SSID
     x_pos = (width/2) - (string_width(font,text)/2)
-	y_pos = (height/2) - (8/2)
+    y_pos = (height/2) - (8/2)
 
-	# Draw SSID
-	draw.text((x_pos, y_pos), text, font=font, fill=255)
+    # Draw SSID
+    draw.text((x_pos, y_pos), text, font=font, fill=255)
 
-	# Draw the image buffer
-	disp.image(image)
-	disp.display()
+    # Draw the image buffer
+    disp.image(image)
+    disp.display()
 
 def string_width(fonttype,string):
-	string_width = 0
+    string_width = 0
 
-	for i, c in enumerate(string):
-		char_width, char_height = draw.textsize(c, font=fontType)
-		string_width += char_width
+    for i, c in enumerate(string):
+        char_width, char_height = draw.textsize(c, font=fonttype)
+        string_width += char_width
 
-	return string_width
+    return string_width
 
 # Display Functions
 def display_time():
@@ -58,83 +58,83 @@ def display_time():
     clear_display()
 
     # Font and Size
-    font = set_font(35)
+    font = ImageFont.truetype(FONT_PATH, 8)
 
 	# Position time
-	x_pos = (disp.width/2)-(string_width(font,current_time)/2)
-	y_pos = 2 + (disp.height-4-8)/2 - (35/2)
+    x_pos = (disp.width/2)-(string_width(font,current_time)/2)
+    y_pos = 2 + (disp.height-4-8)/2 - (35/2)
 
     # Draw Time
-	draw.text((x_pos, y_pos), current_time, font=font, fill=255)
+    draw.text((x_pos, y_pos), current_time, font=font, fill=255)
 
 	# Set font type and size
-    font = set_font(8)
+    font = ImageFont.truetype(FONT_PATH, 8)
 
 	# Position date
-	x_pos = (disp.width/2)-(string_width(font,current_date)/2)
-	y_pos = disp.height-10
+    x_pos = (disp.width/2)-(string_width(font,current_date)/2)
+    y_pos = disp.height-10
 
 	# Draw date
-	draw.text((x_pos, y_pos), current_date, font=font, fill=255)
+    draw.text((x_pos, y_pos), current_date, font=font, fill=255)
 
 	# Draw the image buffer
-	disp.image(image)
-	disp.display()
+    disp.image(image)
+    disp.display()
 
 def display_network():
     # Collect network information by parsing command line outputs
-	ipaddress = os.popen("ifconfig wlan0 | grep 'inet addr' | awk -F: '{print $2}' | awk '{print $1}'").read()
-	netmask = os.popen("ifconfig wlan0 | grep 'Mask' | awk -F: '{print $4}'").read()
-	gateway = os.popen("route -n | grep '^0.0.0.0' | awk '{print $2}'").read()
-	ssid = os.popen("iwconfig wlan0 | grep 'ESSID' | awk '{print $4}' | awk -F\\\" '{print $2}'").read()
+    ipaddress = os.popen("ifconfig wlan0 | grep 'inet addr' | awk -F: '{print $2}' | awk '{print $1}'").read()
+    netmask = os.popen("ifconfig wlan0 | grep 'Mask' | awk -F: '{print $4}'").read()
+    gateway = os.popen("route -n | grep '^0.0.0.0' | awk '{print $2}'").read()
+    ssid = os.popen("iwconfig wlan0 | grep 'ESSID' | awk '{print $4}' | awk -F\\\" '{print $2}'").read()
 
     clear_display()
 
     # Begin SSID
-    font = set_font(12)
+    font = ImageFont.truetype(FONT_PATH, 12)
 
     # Position SSID
     x_pos = 2
-	y_pos = 2
+    y_pos = 2
 
-	# Draw SSID
-	draw.text((x_pos, y_pos), ssid, font=font, fill=255)
+    # Draw SSID
+    draw.text((x_pos, y_pos), ssid, font=font, fill=255)
 	
-	# Set font type and size
-    font = set_font(8)
+    # Set font type and size
+    font = ImageFont.truetype(FONT_PATH, 8)
 
     # End SSID
     # Begin IP
 
-	# Position IP
-	y_pos += 12 + 10 
+    # Position IP
+    y_pos += 12 + 10 
         
-	# Draw IP
-	draw.text((x_pos, y_pos), "IP: "+ipaddress, font=font, fill=255)
+    # Draw IP
+    draw.text((x_pos, y_pos), "IP: "+ipaddress, font=font, fill=255)
 
     # End IP
     # Begin Network Mask
 
 	# Position NM
-	y_pos += 10 
+    y_pos += 10 
 
 	# Draw NM
-	draw.text((x_pos, y_pos), "NM: "+netmask, font=font, fill=255)
+    draw.text((x_pos, y_pos), "NM: "+netmask, font=font, fill=255)
 
     # End Network Mask
     # Begin Gateway
 
 	# Position GW
-	y_pos += 10
+    y_pos += 10
 
 	# Draw GW
-	draw.text((x_pos, y_pos), "GW: "+gateway, font=font, fill=255)
+    draw.text((x_pos, y_pos), "GW: "+gateway, font=font, fill=255)
 	
     # End Gateway
 
 	# Draw the image buffer
-	disp.image(image)
-	disp.display()
+    disp.image(image)
+    disp.display()
 
 # End Functions
 
@@ -173,33 +173,33 @@ time_format = True
 
 # Program Loop
 while True:
-	millis = int(round(time.time() * 1000))
+    millis = int(round(time.time() * 1000))
 
 	# Software debouncing
-	if((millis - prev_millis) > 250):
+    if((millis - prev_millis) > 250):
 		# Cycle through different displays
-		if(not GPIO.input(12)):
-			display += 1
-			if(display > 2):
-				display = 0
-			prev_millis = int(round(time.time() * 1000))
+        if(not GPIO.input(12)):
+            display += 1
+            if(display > 2):
+                display = 0
+            prev_millis = int(round(time.time() * 1000))
 
 		# Trigger action based on current display
-		elif(not GPIO.input(16)):
-			if(display == 0):
+        elif(not GPIO.input(16)):
+            if(display == 0):
 				# Toggle between 12/24h format
-				time_format = not time_format
-				time.sleep(0.01)
-			elif(display == 1):
+                time_format = not time_format
+                time.sleep(0.01)
+            elif(display == 1):
 				# Reconnect to network
-				display_custom("reconnecting wifi ...")
-				os.popen("sudo ifdown wlan0; sleep 5; sudo ifup --force wlan0")
-				time.sleep(0.01)
-			prev_millis = int(round(time.time() * 1000))
+                display_custom("reconnecting wifi ...")
+                os.popen("sudo ifdown wlan0; sleep 5; sudo ifup --force wlan0")
+                time.sleep(0.01)
+            prev_millis = int(round(time.time() * 1000))
 
-	if(display == 0):
-		display_time()
-	elif(display == 1):
-		display_network()
+    if(display == 0):
+        display_time()
+    elif(display == 1):
+        display_network()
 
-	time.sleep(0.1)
+    time.sleep(0.1)
