@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 
 # Imports
+from dotenv import load_dotenv, find_dotenv
 import time
 import Adafruit_SSD1306
 import RPi.GPIO as GPIO
 from PIL import Image,ImageFont,ImageDraw
-from dotenv import load_dotenv
 import os
 
-load_dotenv()
+load_dotenv(find_dotenv())
 
-FONT_PATH=os.getenv("FONT_PATH")
+FONT_PATH = os.getenv("FONT_PATH")
 
 # Functions
 # Default Functions
