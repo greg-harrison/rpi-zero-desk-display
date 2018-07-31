@@ -48,11 +48,11 @@ def string_width(fonttype,string):
 def display_time():
     # Get the Current date and time
     if (time_format):
-        current_time = time.strftime("%I:%M")
-    else:
         current_time = time.strftime("%H:%M")
-    
-    current_date = time.strftime("%m/%d/%Y")
+    else:
+        current_time = time.strftime("%I:%M")
+
+    current_date = time.strftime("%a %m/%d/%Y")
 
     # Empty screen
     clear_display()
