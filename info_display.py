@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
 # Imports
-import os
 import time
 import Adafruit_SSD1306
 import RPi.GPIO as GPIO
 from PIL import Image,ImageFont,ImageDraw
 from dotenv import load_dotenv
+import os
 
 load_dotenv()
 
@@ -58,11 +58,11 @@ def display_time():
     clear_display()
 
     # Font and Size
-    font = ImageFont.truetype(FONT_PATH, 8)
+    font = ImageFont.truetype(FONT_PATH, 16)
 
 	# Position time
-    x_pos = (disp.width/2)-(string_width(font,current_time)/2)
-    y_pos = 2 + (disp.height-4-8)/2 - (35/2)
+    x_pos = (disp.width/1.5)-(string_width(font,current_time))
+    y_pos = 2 + (disp.height-2)/2 - (35/2)
 
     # Draw Time
     draw.text((x_pos, y_pos), current_time, font=font, fill=255)
