@@ -198,6 +198,7 @@ while True:
             prev_millis = int(round(time.time() * 1000))
 
 		# Shutdown
+		# TODO: Getting an error calling this indent unexpected. Very strange
 		elif(GPIO.input(12) & GPIO.input(16)):
 			display_custom("goodbye ...")
 			time.sleep(2)
