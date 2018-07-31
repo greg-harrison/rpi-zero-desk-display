@@ -198,7 +198,7 @@ while True:
             prev_millis = int(round(time.time() * 1000))
 
 	# Shutdown
-	if(GPIO.input(12) && GPIO.input(16)):
+	if(GPIO.input(12) & GPIO.input(16)):
 		display_custom("goodbye ...")
 		time.sleep(2)
 		exit()
