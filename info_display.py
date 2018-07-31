@@ -180,7 +180,7 @@ while True:
 		# Cycle through different displays
         if(not GPIO.input(12)):
             display += 1
-            if(display > 2):
+            if(display > 1):
                 display = 0
             prev_millis = int(round(time.time() * 1000))
 
@@ -196,6 +196,12 @@ while True:
                 os.popen("sudo ifdown wlan0; sleep 5; sudo ifup --force wlan0")
                 time.sleep(0.01)
             prev_millis = int(round(time.time() * 1000))
+
+		# Shutdown
+		elif(GPIO.input(12) && GPIO.input(16))
+			display_custom("goodbye ...")
+			time.sleep(2)
+			exit()
 
     if(display == 0):
         display_time()
