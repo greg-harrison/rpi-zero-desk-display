@@ -17,7 +17,7 @@ FONT_PATH = os.getenv("FONT_PATH")
 def clear_display():
     draw.rectangle((0,0,width,height), outline=0, fill=0)
 
-def display_custom(text, size):
+def display_custom(text, *size):
     # Clear image buffer by drawing a black filled box
     clear_display()
 
@@ -84,19 +84,19 @@ def display_time():
 
 def display_network():
     # Collect network information by parsing command line outputs
-    ipaddress = os.popen("ifconfig wlan0 | grep 'inet addr' | awk -F: '{print $2}' | awk '{print $1}'").read()
-    netmask = os.popen("ifconfig wlan0 | grep 'Mask' | awk -F: '{print $4}'").read()
+    ipaddress = os.popen("ifconfig wlan0 | awk '{ print $2}' | grep -E -o '([0-9]{1,3}[\.]){3}[0-9]{1,3}'").read()
+    netmask = os.popen("ifconfig wlan0 | grep 'netmask' | awk '{print $4}'").read()
     gateway = os.popen("route -n | grep '^0.0.0.0' | awk '{print $2}'").read()
     ssid = os.popen("iwconfig wlan0 | grep 'ESSID' | awk '{print $4}' | awk -F\\\" '{print $2}'").read()
 
     clear_display()
 
     # Begin SSID
-    font = ImageFont.truetype(FONT_PATH, 12)
+    font = ImageFont.truetype(FONT_PATH, 10)
 
     # Position SSID
     x_pos = 2
-    y_pos = 2
+    y_pos = 0 
 
     # Draw SSID
     draw.text((x_pos, y_pos), ssid, font=font, fill=255)
@@ -108,7 +108,7 @@ def display_network():
     # Begin IP
 
     # Position IP
-    y_pos += 12 + 10 
+    y_pos += 12 
         
     # Draw IP
     draw.text((x_pos, y_pos), "IP: "+ipaddress, font=font, fill=255)
@@ -173,37 +173,43 @@ display = 0
 time_format = True
 
 # Program Loop
-while True:
-    millis = int(round(time.time() * 1000))
+try:
+    while True:
+        millis = int(round(time.time() * 1000))
 
 	# Software debouncing
-    if((millis - prev_millis) > 250):
+        if((millis - prev_millis) > 250):
         # Cycle through different displays
-        if(not GPIO.input(12)):
-            display += 1
-            if(display > 2):
-                display = 0
-            prev_millis = int(round(time.time() * 1000))
+            if(not GPIO.input(12)):
+                display += 1
+                if(display > 2):
+                    display = 0
+                prev_millis = int(round(time.time() * 1000))
 
 	# Trigger action based on current display
-        elif(not GPIO.input(16)):
-            if(display == 0):
-	    # Toggle between 12/24h format
-                time_format = not time_format
-                time.sleep(0.01)
-            elif(display == 1):
-	    # Reconnect to network
-                display_custom("reconnecting wifi ...")
-                os.popen("sudo ifdown wlan0; sleep 5; sudo ifup --force wlan0")
-                time.sleep(0.01)
-            prev_millis = int(round(time.time() * 1000))
+            elif(not GPIO.input(16)):
+                if(display == 0):
+	        # Toggle between 12/24h format
+                    time_format = not time_format
+                    time.sleep(0.01)
+                elif(display == 1):
+	        # Reconnect to network
+                    display_custom("reconnecting wifi ...")
+                    os.popen("sudo ifdown wlan0; sleep 5; sudo ifup --force wlan0")
+                    time.sleep(0.01)
+                prev_millis = int(round(time.time() * 1000))
 
 
-    if(display == 0):
-        display_time()
-    elif(display == 1):
-        display_network()
-    elif(display == 2):
-        display_custom("chicken dinner", 14)
+        if(display == 0):
+            display_time()
+        elif(display == 1):
+            display_network()
+        elif(display == 2):
+            display_custom("Text Test", 14)
 
-    time.sleep(0.1)
+        time.sleep(0.1)
+
+except KeyboardInterrupt:
+    display_custom("(-_-) Goodnight")
+    clear_display()
+    exit()
