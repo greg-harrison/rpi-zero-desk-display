@@ -17,12 +17,13 @@ FONT_PATH = os.getenv("FONT_PATH")
 def clear_display():
     draw.rectangle((0,0,width,height), outline=0, fill=0)
 
-def display_custom(text):
+def display_custom(text, size):
     # Clear image buffer by drawing a black filled box
     clear_display()
 
     # Set font type and size
-    font = ImageFont.truetype(FONT_PATH, 8)
+    fontsize = size if size else 8 
+    font = ImageFont.truetype(FONT_PATH, fontsize)
         
     # Position SSID
     x_pos = (width/2) - (string_width(font,text)/2)
@@ -177,35 +178,32 @@ while True:
 
 	# Software debouncing
     if((millis - prev_millis) > 250):
-		# Cycle through different displays
+        # Cycle through different displays
         if(not GPIO.input(12)):
             display += 1
-            if(display > 1):
+            if(display > 2):
                 display = 0
             prev_millis = int(round(time.time() * 1000))
 
-		# Trigger action based on current display
+	# Trigger action based on current display
         elif(not GPIO.input(16)):
             if(display == 0):
-				# Toggle between 12/24h format
+	    # Toggle between 12/24h format
                 time_format = not time_format
                 time.sleep(0.01)
             elif(display == 1):
-				# Reconnect to network
+	    # Reconnect to network
                 display_custom("reconnecting wifi ...")
                 os.popen("sudo ifdown wlan0; sleep 5; sudo ifup --force wlan0")
                 time.sleep(0.01)
             prev_millis = int(round(time.time() * 1000))
 
-		# Shutdown
-		elif(GPIO.input(12) & GPIO.input(16)):
-			display_custom("goodbye ...")
-			time.sleep(2)
-			exit()
 
     if(display == 0):
         display_time()
     elif(display == 1):
         display_network()
+    elif(display == 2):
+        display_custom("chicken dinner", 14)
 
     time.sleep(0.1)
