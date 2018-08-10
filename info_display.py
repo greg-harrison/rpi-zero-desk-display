@@ -2,27 +2,49 @@
 
 # Imports
 from dotenv import load_dotenv, find_dotenv
+import requests
 import time
 import Adafruit_SSD1306
 import RPi.GPIO as GPIO
+from gpiozero import Button,RGBLED,PingServer
 from PIL import Image,ImageFont,ImageDraw
 import os
+import random
+import json
 
 load_dotenv(find_dotenv())
 
 FONT_PATH = os.getenv("FONT_PATH")
+NEWS_API_KEY = os.getenv("NEWS_API_KEY")
+
+headlinesUrl = ('https://newsapi.org/v2/top-headlines?'
+                'sources=cnn,bloomberg,hacker-news,the-wall-street-journal&'
+                'pageSize=5&'
+                'apiKey='+NEWS_API_KEY)
+
+button1 = Button(12)
+button2 = Button(16)
+
+led = RGBLED(red=25, green=23, blue=24)
+
+def randomColor():
+    randomRed=random.random()
+    randomGreen=random.random()
+    randomBlue=random.random()
+
+    led.color = (randomRed, randomGreen, randomBlue)
 
 # Functions
 # Default Functions
 def clear_display():
     draw.rectangle((0,0,width,height), outline=0, fill=0)
 
-def display_custom(text, *size):
+def display_custom(text, size=8):
     # Clear image buffer by drawing a black filled box
     clear_display()
 
     # Set font type and size
-    fontsize = size if size else 8 
+    fontsize = size 
     font = ImageFont.truetype(FONT_PATH, fontsize)
         
     # Position SSID
@@ -137,6 +159,61 @@ def display_network():
     disp.image(image)
     disp.display()
 
+# Load the headlines object into a dictionary
+# Use the Alt button to flip through the headlines
+# Always display news source
+# Always display the time that we did the pull
+
+global headlinesObj
+global headlinesTime
+#### Issues with setting the headlines Obj and accessing it globally :/
+
+def getNewsHeadlines():
+    response = requests.get(headlinesUrl)
+    data = response.json()
+    headlinesObj = data['articles']
+    headlinesTime = time.strftime("%H:%M")
+
+    print(headlinesObj)
+
+    display_custom('News Called', 8)
+    time.sleep(1)
+
+
+def headlinesAlt(value):
+    clear_display()
+
+    print(value)
+    print(headlinesObj)
+    print(headlinesObj[1])
+    
+    entry = headlinesObj[value-1]
+
+    # Begin Source
+    font = ImageFont.truetype(FONT_PATH, 8)
+
+    # Position Source
+    x_pos = 2
+    y_pos = 0 
+
+    # Draw Source
+    draw.text((x_pos, y_pos), headlinesTime + ' ' + entry['source']['name'], font=font, fill=255)
+	
+    # Set font type and size
+    font = ImageFont.truetype(FONT_PATH, 6)
+
+    # Begin Headline
+
+    # Position Headline
+    y_pos += 10 
+        
+    # Draw IP
+    draw.text((x_pos, y_pos), entry['title'], font=font, fill=255)
+    
+    disp.image(image)
+    disp.display()
+
+
 # End Functions
 
 # GPIO Setup
@@ -169,6 +246,8 @@ font = ImageFont.load_default()
 draw = ImageDraw.Draw(image)
 
 prev_millis = 0
+prev_news = 0
+headlineValue = 0
 display = 0
 time_format = True
 
@@ -180,14 +259,15 @@ try:
 	# Software debouncing
         if((millis - prev_millis) > 250):
         # Cycle through different displays
-            if(not GPIO.input(12)):
+            if(button1.is_pressed):
                 display += 1
-                if(display > 2):
+                if(display > 3):
                     display = 0
                 prev_millis = int(round(time.time() * 1000))
 
 	# Trigger action based on current display
-            elif(not GPIO.input(16)):
+            if(button2.is_pressed):
+                randomColor()
                 if(display == 0):
 	        # Toggle between 12/24h format
                     time_format = not time_format
@@ -197,19 +277,33 @@ try:
                     display_custom("reconnecting wifi ...")
                     os.popen("sudo ifdown wlan0; sleep 5; sudo ifup --force wlan0")
                     time.sleep(0.01)
+                elif(display == 3):
+                    headlineValue += 1
+                    if(headlineValue > 5):
+                        headlineValue = 0
+                    headlinesAlt(headlineValue)
+                    time.sleep(0.01)
+
                 prev_millis = int(round(time.time() * 1000))
 
 
         if(display == 0):
             display_time()
+            prev_news = 0
         elif(display == 1):
             display_network()
+            prev_news = 0
         elif(display == 2):
-            display_custom("Text Test", 14)
+            display_custom("Hello World", 14)
+            prev_news = 0
+        elif(display == 3):
+            if((millis - prev_news) > 300000):
+                getNewsHeadlines()
+                prev_news = millis
 
         time.sleep(0.1)
 
 except KeyboardInterrupt:
-    display_custom("(-_-) Goodnight")
+    display_custom("(-_-) Goodnight", 10)
     clear_display()
     exit()
