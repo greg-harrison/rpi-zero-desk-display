@@ -159,53 +159,52 @@ def display_network():
     disp.image(image)
     disp.display()
 
-# Load the headlines object into a dictionary
-# Use the Alt button to flip through the headlines
-# Always display news source
-# Always display the time that we did the pull
 
-global headlinesObj
-global headlinesTime
-#### Issues with setting the headlines Obj and accessing it globally :/
+headlinesArr = []
+headlinesTime = ""
 
 def getNewsHeadlines():
+    global headlinesArr
+    global headlinesTime
+
     response = requests.get(headlinesUrl)
     data = response.json()
-    headlinesObj = data['articles']
+    headlinesArr = data['articles']
     headlinesTime = time.strftime("%H:%M")
-
-    print(headlinesObj)
 
     display_custom('News Called', 8)
     time.sleep(1)
 
 
 def headlinesAlt(value):
+    global headlinesArr
+    global headlinesTime
+
     clear_display()
 
-    print(value)
-    print(headlinesObj)
-    print(headlinesObj[1])
+    entry = headlinesArr[value-1]
     
-    entry = headlinesObj[value-1]
+    print(entry)
 
     # Begin Source
-    font = ImageFont.truetype(FONT_PATH, 8)
+    font = ImageFont.truetype(FONT_PATH, 6)
 
     # Position Source
     x_pos = 2
     y_pos = 0 
 
     # Draw Source
-    draw.text((x_pos, y_pos), headlinesTime + ' ' + entry['source']['name'], font=font, fill=255)
+    draw.text((x_pos, y_pos), "Last Updated: " + headlinesTime, font=font, fill=255)
+    y_pos=10
+    draw.text((x_pos, y_pos), entry['source']['name'], font=font, fill=255)
 	
     # Set font type and size
-    font = ImageFont.truetype(FONT_PATH, 6)
+    font = ImageFont.truetype(FONT_PATH, 7)
 
     # Begin Headline
 
     # Position Headline
-    y_pos += 10 
+    y_pos += 15 
         
     # Draw IP
     draw.text((x_pos, y_pos), entry['title'], font=font, fill=255)
